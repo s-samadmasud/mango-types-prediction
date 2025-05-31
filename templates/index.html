@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mango Type Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            border-radius: 8px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .file-input-wrapper:hover {
+            background-color: #45a049;
+        }
+        .file-input-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .button-primary {
+            background-color: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .button-primary:hover {
+            background-color: #2563eb;
+        }
+        .image-display {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+        .error-message {
+            color: #ef4444; /* Red-500 */
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        .detection-item {
+            background-color: #e0f2fe; /* Light blue */
+            border-left: 4px solid #3b82f6; /* Blue border */
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Mango Type Detector</h1>
+
+        <form action="/predict" method="post" enctype="multipart/form-data" class="space-y-6">
+            <div class="flex flex-col items-center space-y-4">
+                <div class="file-input-wrapper">
+                    <span>Choose Image</span>
+                    <input type="file" name="file" id="fileInput" accept="image/*">
+                </div>
+                <span id="fileName" class="text-gray-600">No file chosen</span>
+            </div>
+            
+            <button type="submit" class="button-primary w-full md:w-auto">Upload and Predict</button>
+        </form>
+
+        {% if error %}
+            <p class="error-message">{{ error }}</p>
+        {% endif %}
+
+        {% if predicted_image_name %}
+            <h2 class="text-2xl font-semibold text-gray-700 mt-8 mb-4">Prediction Results</h2>
+            <img src="{{ url_for('display_predicted_image', filename=predicted_image_name) }}" alt="Predicted Image" class="image-display mx-auto">
+            
+            <div class="mt-6 text-left">
+                <h3 class="text-xl font-medium text-gray-700 mb-3">Detections:</h3>
+                {% if detections %}
+                    {% for detection in detections %}
+                        <div class="detection-item">
+                            {% if detection.message %}
+                                <p>{{ detection.message }}</p>
+                            {% else %}
+                                <p><span class="font-semibold">Class:</span> {{ detection.class_name }}</p>
+                                <p><span class="font-semibold">Confidence:</span> {{ detection.confidence }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-gray-600">No specific detections found or processed.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Display selected file name
+        document.getElementById('fileInput').addEventListener('change', function() {
+            const fileNameSpan = document.getElementById('fileName');
+            if (this.files && this.files.length > 0) {
+                fileNameSpan.textContent = this.files[0].name;
+            } else {
+                fileNameSpan.textContent = 'No file chosen';
+            }
+        });
+    </script>
+</body>
+</html>
